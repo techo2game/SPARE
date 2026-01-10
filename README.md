@@ -3,6 +3,7 @@
 This repository will host the official implementation of the method described in:
 
 SPARE: A Fast and Accurate Approach Based on Handcrafted Features and Lightweight Fusion for 3D Anomaly Detection
+
 Rémi LHOSTE, Damien DELHAY, Zakaria BAOU, Antoine VACAVANT
 Submitted to ICPR, 2026
 
