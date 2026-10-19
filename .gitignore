@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Compiled extensions / build output
+build/
+*.so
+*.o
+.ninja_deps
+.ninja_log
+build.ninja
+
+# Datasets
+data/
+
+# Generated artifacts (see README, "Pipeline")
+reg_output/
+synthetic_data/
+spatial_memory_banks/
+precomputed_features/
+pretrain/
+logs/
+artifacts/
+parenet_real3dad/output/
+parenet_real3dad/data/
+wandb/
+
+# Weights / caches
+*.pt
+*.pth
+*.pth.tar
+*.tar
+*.pkl
+
+build_extensions.log
+train_variability.csv
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

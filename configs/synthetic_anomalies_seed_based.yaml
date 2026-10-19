@@ -1,0 +1,570 @@
+# Seed-based Synthetic Anomaly Generation Configuration
+# Mesh-aware sculpting: Seeds → Sculpting with natural falloff → Distance GT
+
+# Global settings
+seed: 42                          # Random seed for reproducibility
+output_dir: synthetic_data        # Output directory for synthetic anomalies
+num_synthetic_per_sample: 100     # Total synthetic samples per training sample (sum of all counts)
+visualize: false                  # Visualize each generated anomaly (set true for debugging)
+
+# Training deformations (used for synthetic anomaly generation)
+train_deformations:
+  # === Very short lines (5-10 points) - localized defects ===
+  - name: line_tiny_sharp
+    config: line_tiny_sharp_config
+    count: 10
+
+  - name: line_tiny_smooth
+    config: line_tiny_smooth_config
+    count: 10
+
+  # === Short lines (10-15 points) - small anomalies ===
+  - name: line_short_strong
+    config: line_short_strong_config
+    count: 10
+
+  - name: line_short_wide
+    config: line_short_wide_config
+    count: 10
+
+  # === Medium lines (15-20 points) - balanced ===
+  - name: line_medium_gaussian
+    config: line_medium_gaussian_config
+    count: 10
+
+  - name: line_medium_linear
+    config: line_medium_linear_config
+    count: 10
+
+  # === Longer lines (20-25 points) - elongated defects ===
+  - name: line_long_subtle
+    config: line_long_subtle_config
+    count: 10
+
+  - name: line_long_cosine
+    config: line_long_cosine_config
+    count: 10
+
+  # === Point seeds (10% - pour varier) ===
+  - name: point_small
+    config: point_small_config
+    count: 5
+
+  - name: point_large
+    config: point_large_config
+    count: 5
+
+# Validation deformations
+val_deformations:
+  - name: line_tiny_val
+    config: line_tiny_smooth_config
+    count: 2
+
+  - name: line_medium_val
+    config: line_medium_gaussian_config
+    count: 2
+
+  - name: line_long_val
+    config: line_long_subtle_config
+    count: 2
+
+  - name: point_val
+    config: point_small_config
+    count: 2
+
+
+# =============================================================================
+# Configuration Definitions - LINE DEFORMATIONS (privileged)
+# =============================================================================
+
+# --- Smooth line with Gaussian falloff ---
+line_smooth_config:
+  seed:
+    type: line_fps
+    num_seeds: 10                      # 3 line seeds
+    line_length: 60                   # Number of points per line
+    k_neighbors: 5
+    use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+
+  deformation:
+    influence_radius: 0.18            # Medium radius
+    amplitude: 0.09                   # Medium amplitude
+    falloff_type: gaussian
+    smoothing_iterations: 4           # Smooth sculpting
+    k_neighbors: 20
+    distance_threshold: 0.01          # STRICT GT (increased from 0.05)
+    direction: null                   # Random bulge/dent
+
+
+# --- Sharp line with Gaussian falloff ---
+line_sharp_config:
+  seed:
+    type: line_fps
+    num_seeds: 10                      # Fewer, longer lines
+    line_length: 80                   # Number of points per line (longer)
+    k_neighbors: 5
+    use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+
+  deformation:
+    influence_radius: 0.15
+    amplitude: 0.12                   # Stronger amplitude
+    falloff_type: gaussian
+    smoothing_iterations: 2           # Less smoothing = sharper
+    k_neighbors: 20
+    distance_threshold: 0.01          # STRICT GT
+    direction: null
+
+
+# --- Linear falloff line (sharper edges) ---
+line_linear_config:
+  seed:
+    type: line_fps
+    num_seeds: 10
+    line_length: 50                   # Number of points per line
+    k_neighbors: 5
+    use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+
+  deformation:
+    influence_radius: 0.16
+    amplitude: 0.08
+    falloff_type: linear              # Linear falloff (sharper than Gaussian)
+    smoothing_iterations: 3
+    k_neighbors: 20
+    distance_threshold: 0.01          # STRICT GT
+    direction: null
+
+
+# --- Linear falloff sharp ---
+line_linear_sharp_config:
+  seed:
+    type: line_fps
+    num_seeds: 10
+    line_length: 70                   # Number of points per line
+    k_neighbors: 5
+    use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+
+  deformation:
+    influence_radius: 0.14
+    amplitude: 0.11
+    falloff_type: linear
+    smoothing_iterations: 2           # Sharp edges
+    k_neighbors: 20
+    distance_threshold: 0.01          # STRICT GT
+    direction: null
+
+
+# --- Cosine falloff line (very smooth transitions) ---
+line_cosine_config:
+  seed:
+    type: line_fps
+    num_seeds: 10
+    line_length: 0.06
+    k_neighbors: 5
+    use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+
+  deformation:
+    influence_radius: 0.20            # Wider influence
+    amplitude: 0.08
+    falloff_type: cosine              # Very smooth falloff
+    smoothing_iterations: 5           # Very smooth sculpting
+    k_neighbors: 25
+    distance_threshold: 0.01          # STRICT GT
+    direction: null
+
+
+# --- Multiple line seeds (distributed defects) ---
+multiline_config:
+  seed:
+    type: line_fps
+    num_seeds: 10                      # Many lines = distributed defects
+    line_length: 40                   # Number of points per line (shorter)
+    k_neighbors: 5
+    use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+
+  deformation:
+    influence_radius: 0.12            # Smaller radius per line
+    amplitude: 0.07
+    falloff_type: gaussian
+    smoothing_iterations: 3
+    k_neighbors: 20
+    distance_threshold: 0.01          # STRICT GT
+    direction: null
+
+
+# --- Strong deformation line ---
+line_strong_config:
+  seed:
+    type: line_fps
+    num_seeds: 10
+    line_length: 70                   # Number of points per line
+    k_neighbors: 5
+    use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+
+  deformation:
+    influence_radius: 0.22            # Large radius
+    amplitude: 0.15                   # Strong deformation
+    falloff_type: gaussian
+    smoothing_iterations: 6           # More smoothing for strong deformations
+    k_neighbors: 25
+    distance_threshold: 0.01         # VERY STRICT GT (strong deformations)
+    direction: null
+
+
+# --- Narrow/localized line defect ---
+line_narrow_config:
+  seed:
+    type: line_fps
+    num_seeds: 10
+    line_length: 25
+    k_neighbors: 5
+    use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+
+  deformation:
+    influence_radius: 0.10            # Small radius (localized)
+    amplitude: 0.10                   # Strong but localized
+    falloff_type: linear              # Sharp falloff
+    smoothing_iterations: 2           # Less smoothing = sharper
+    k_neighbors: 15
+    distance_threshold: 0.01          # STRICT GT
+    direction: null
+
+
+# =============================================================================
+# NEW CONFIGS - Lines with 5-25 points, varied deformations
+# =============================================================================
+
+# === VERY SHORT LINES (5-10 points) ===
+
+line_tiny_sharp_config:
+  seed:
+    type: line_fps
+    num_seeds: 12
+    line_length: 5                    # Very short (5 points)
+    k_neighbors: 5
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.05            # Small radius
+    amplitude: 0.04                   # Strong but localized
+    falloff_type: linear              # Sharp edges
+    smoothing_iterations: 2
+    k_neighbors: 15
+    distance_threshold: 0.001
+    direction: null
+
+line_tiny_smooth_config:
+  seed:
+    type: line_fps
+    num_seeds: 20
+    line_length: 8                    # 8 points
+    k_neighbors: 5
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.10
+    amplitude: 0.04
+    falloff_type: gaussian
+    smoothing_iterations: 4
+    k_neighbors: 20
+    distance_threshold: 0.01
+    direction: null
+
+# === SHORT LINES (10-15 points) ===
+
+line_short_strong_config:
+  seed:
+    type: line_fps
+    num_seeds: 8
+    line_length: 12                   # 12 points
+    k_neighbors: 5
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.14
+    amplitude: 0.09                   # Strong deformation
+    falloff_type: gaussian
+    smoothing_iterations: 3
+    k_neighbors: 20
+    distance_threshold: 0.01
+    direction: null
+
+line_short_wide_config:
+  seed:
+    type: line_fps
+    num_seeds: 10
+    line_length: 10                   # 10 points
+    k_neighbors: 5
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.20            # Wide influence
+    amplitude: 0.04                   # Subtle
+    falloff_type: cosine
+    smoothing_iterations: 5
+    k_neighbors: 25
+    distance_threshold: 0.01
+    direction: null
+
+# === MEDIUM LINES (15-20 points) ===
+
+line_medium_gaussian_config:
+  seed:
+    type: line_fps
+    num_seeds: 8
+    line_length: 18                   # 18 points
+    k_neighbors: 5
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.16
+    amplitude: 0.07
+    falloff_type: gaussian
+    smoothing_iterations: 4
+    k_neighbors: 20
+    distance_threshold: 0.01
+    direction: null
+
+line_medium_linear_config:
+  seed:
+    type: line_fps
+    num_seeds: 10
+    line_length: 15                   # 15 points
+    k_neighbors: 5
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.12
+    amplitude: 0.08
+    falloff_type: linear
+    smoothing_iterations: 3
+    k_neighbors: 18
+    distance_threshold: 0.01
+    direction: null
+
+# === LONGER LINES (20-25 points) ===
+
+line_long_subtle_config:
+  seed:
+    type: line_fps
+    num_seeds: 6
+    line_length: 22                   # 22 points
+    k_neighbors: 5
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.18
+    amplitude: 0.05                   # Subtle
+    falloff_type: gaussian
+    smoothing_iterations: 5
+    k_neighbors: 25
+    distance_threshold: 0.01
+    direction: null
+
+line_long_cosine_config:
+  seed:
+    type: line_fps
+    num_seeds: 8
+    line_length: 25                   # 25 points (longest)
+    k_neighbors: 5
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.22
+    amplitude: 0.045
+    falloff_type: cosine
+    smoothing_iterations: 6
+    k_neighbors: 25
+    distance_threshold: 0.01
+    direction: null
+
+
+# =============================================================================
+# POINT DEFORMATIONS (10% of total)
+# =============================================================================
+
+point_small_config:
+  seed:
+    type: point_fps
+    num_seeds: 20
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.12
+    amplitude: 0.05
+    falloff_type: gaussian
+    smoothing_iterations: 3
+    k_neighbors: 20
+    distance_threshold: 0.01
+    direction: null
+
+point_large_config:
+  seed:
+    type: point_fps
+    num_seeds: 6
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.18            # Larger radius
+    amplitude: 0.04
+    falloff_type: cosine
+    smoothing_iterations: 5
+    k_neighbors: 25
+    distance_threshold: 0.01
+    direction: null
+
+
+# =============================================================================
+# OLD POINT CONFIGS (kept for validation)
+# =============================================================================
+
+point_localized_config:
+  seed:
+    type: point_fps
+    num_seeds: 15
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.15
+    amplitude: 0.07
+    falloff_type: gaussian
+    smoothing_iterations: 3
+    k_neighbors: 20
+    distance_threshold: 0.01
+    direction: null
+
+point_distributed_config:
+  seed:
+    type: point_fps
+    num_seeds: 15
+    use_fps: false
+
+  deformation:
+    influence_radius: 0.12
+    amplitude: 0.05
+    falloff_type: cosine
+    smoothing_iterations: 4
+    k_neighbors: 20
+    distance_threshold: 0.01
+    direction: null
+
+
+# =============================================================================
+# Additional Examples (commented out - pour expérimenter)
+# =============================================================================
+
+# # Very long line defect (scratch-like)
+# line_scratch_config:
+#   seed:
+#     type: line_fps
+#     num_seeds: 1                    # Single long line
+#     line_length: 120                # Number of points (very long)
+#     k_neighbors: 5
+#     use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+#
+#   deformation:
+#     influence_radius: 0.08          # Narrow
+#     amplitude: 0.08
+#     falloff_type: linear
+#     smoothing_iterations: 2
+#     k_neighbors: 20
+#     distance_threshold: 0.08
+#     direction: null
+
+# # Wide shallow deformation
+# line_wide_shallow_config:
+#   seed:
+#     type: line_fps
+#     num_seeds: 2
+#     line_length: 0.06
+#     k_neighbors: 5
+#     use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+#
+#   deformation:
+#     influence_radius: 0.25          # Very wide
+#     amplitude: 0.06                 # Shallow
+#     falloff_type: cosine            # Very smooth
+#     smoothing_iterations: 8         # Very smooth
+#     k_neighbors: 30
+#     distance_threshold: 0.07
+#     direction: null
+
+# # Forced bulge (no dents)
+# line_bulge_only_config:
+#   seed:
+#     type: line_fps
+#     num_seeds: 3
+#     line_length: 0.06
+#     k_neighbors: 5
+#     use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+#
+#   deformation:
+#     influence_radius: 0.18
+#     amplitude: 0.09
+#     falloff_type: gaussian
+#     smoothing_iterations: 4
+#     k_neighbors: 20
+#     distance_threshold: 0.08
+#     direction: 1                    # Force bulge
+
+# # Forced dent (no bulges)
+# line_dent_only_config:
+#   seed:
+#     type: line_fps
+#     num_seeds: 3
+#     line_length: 0.06
+#     k_neighbors: 5
+#     use_fps: false                    # false=random (different each time), true=FPS (deterministic)
+#
+#   deformation:
+#     influence_radius: 0.18
+#     amplitude: 0.09
+#     falloff_type: gaussian
+#     smoothing_iterations: 4
+#     k_neighbors: 20
+#     distance_threshold: 0.08
+#     direction: -1                   # Force dent
+
+
+# =============================================================================
+# Parameter Guide
+# =============================================================================
+
+# Seed Parameters:
+#   - type: 'line_fps' (preferred!), 'point_fps', 'point_random'
+#   - num_seeds: Number of seeds (more = distributed anomalies)
+#   - line_length: Number of points per line seed (40-120 points, absolute count)
+#   - k_neighbors: Neighbors for line growth (typically 5)
+#   - use_fps:
+#       * false (recommended): Random sampling - DIFFERENT patches each time
+#       * true: FPS sampling - deterministic, same patches for same point cloud
+
+# Deformation Parameters:
+#   - influence_radius: Deformation extent (0.10-0.25)
+#   - amplitude: Deformation strength (0.06-0.15)
+#   - falloff_type:
+#       * 'gaussian': Natural smooth falloff (recommended)
+#       * 'linear': Sharper edges
+#       * 'cosine': Very smooth transitions
+#   - smoothing_iterations: Mesh smoothing (2-8)
+#       * 2-3: Sharper defects
+#       * 4-5: Normal sculpting
+#       * 6-8: Very smooth, natural
+#   - k_neighbors: Mesh connectivity (15-30)
+#   - distance_threshold: GT strictness (0.07-0.10, INCREASED for stricter GT!)
+#   - direction: 1 (bulge), -1 (dent), null (random 50/50)
+
+# Tuning Tips:
+#   - Line seeds create elongated defects (scratches, cracks)
+#   - Point seeds create circular defects (dents, bulges)
+#   - use_fps=false (RECOMMENDED): Random patches, different each generation
+#   - use_fps=true: Deterministic FPS, same patches (useful for debugging)
+#   - Increase influence_radius for broader deformations
+#   - Increase amplitude for stronger deformations
+#   - Increase smoothing_iterations for smoother, more natural results
+#   - Increase distance_threshold for stricter GT (fewer "anomalous" points)
+#   - Use gaussian falloff for most natural results
+#   - Use linear falloff for sharper, more visible defects
+#   - Vary num_seeds and line_length for different defect patterns
+#
+# IMPORTANT: When you comment out a deformation config, the next one will use
+# DIFFERENT patches (because use_fps=false uses random sampling)

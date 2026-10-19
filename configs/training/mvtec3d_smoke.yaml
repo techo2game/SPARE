@@ -1,0 +1,44 @@
+data:
+  dataset_path: data/mvtec3d  # MVTec 3D-AD root (relative to the repository root)
+  synthetic_dir: synthetic_data  # Output of generate_synthetic_anomalies.py
+  synthetic_config: configs/synthetic_anomalies_seed_based.yaml
+
+model:
+  name: SigmoidFusion
+  patch_feature_dim: 7
+  hidden_dim: 16
+
+training:
+  epochs: 1
+  batch_size: 1
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  loss_type: patch_contrastive
+  loss_margin: 0.5
+  loss_num_pairs: 20
+  optimizer: adam
+  scheduler:
+    type: reduce_on_plateau
+    patience: 15
+    factor: 0.5
+    min_lr: 0.000001
+  early_stopping_patience: 0
+
+patches:
+  num_patches: 16
+  num_patches_test: 16
+  patch_size: 32
+  k_centers: 4
+  max_points: 150000
+
+evaluation:
+  batch_size: 1
+  eval_every_n_epochs: 999
+  skip_eval: true
+
+logging:
+  log_dir: logs
+  save_every_epoch: true
+  visualize:
+
+seed: 2020

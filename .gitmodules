@@ -1,0 +1,6 @@
+[submodule "PARENet"]
+	path = PARENet
+	url = https://github.com/yaorz97/PARENet.git
+[submodule "cuda_ops/cudaKDTree"]
+	path = cuda_ops/cudaKDTree
+	url = https://github.com/ingowald/cudaKDTree.git

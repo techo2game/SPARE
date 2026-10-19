@@ -1,0 +1,66 @@
+Replace PARENet's pointops KNN query with torch_cluster.knn.
+Applies to yaorz97/PARENet@71baada (see scripts/setup_third_party.sh).
+
+diff --git a/pareconv/extensions/pointops/functions/pointops.py b/pareconv/extensions/pointops/functions/pointops.py
+index 1d18d5f..295de83 100644
+--- a/pareconv/extensions/pointops/functions/pointops.py
++++ b/pareconv/extensions/pointops/functions/pointops.py
+@@ -482,7 +482,7 @@ class KNNQuery_Heap(Function):
+         n = xyz.size(1)
+         idx = torch.cuda.IntTensor(b, m, nsample).zero_()
+         dist2 = torch.cuda.FloatTensor(b, m, nsample).zero_()
+-        pointops_cuda.knnquery_heap_cuda(b, n, m, nsample, xyz, new_xyz, idx, dist2)
++        pointops_cuda.knnquery_cuda(b, n, m, nsample, xyz, new_xyz, idx, dist2)
+         ctx.mark_non_differentiable(idx)
+         return idx.long()
+ 
+diff --git a/pareconv/modules/ops/radius_search.py b/pareconv/modules/ops/radius_search.py
+index ee3099d..30936b9 100644
+--- a/pareconv/modules/ops/radius_search.py
++++ b/pareconv/modules/ops/radius_search.py
+@@ -1,6 +1,6 @@
+ import pdb
+ import torch
+-from pareconv.extensions.pointops.functions import pointops
++from torch_cluster import knn
+ 
+ def radius_search(q_points, s_points, q_lengths, s_lengths, num_neighbors):
+     r"""Computes k nearest neighbors for a batch of q_points and s_points.
+@@ -17,20 +17,29 @@ def radius_search(q_points, s_points, q_lengths, s_lengths, num_neighbors):
+     Returns:
+         neighbors (Tensor): the k nearest neighbors of q_points in s_points (N, k).
+     """
+-    q_pcd1 = q_points[:q_lengths[0]].unsqueeze(0)
+-    q_pcd2 = q_points[q_lengths[0]:].unsqueeze(0)
++    q_pcd1 = q_points[:q_lengths[0]]
++    q_pcd2 = q_points[q_lengths[0]:]
+ 
+-    s_pcd1 = s_points[:s_lengths[0]].unsqueeze(0)
+-    s_pcd2 = s_points[s_lengths[0]:].unsqueeze(0)
++    s_pcd1 = s_points[:s_lengths[0]]
++    s_pcd2 = s_points[s_lengths[0]:]
+ 
++    # torch_cluster.knn(x, y, k) finds k nearest neighbors in x for each point in y
++    # Returns edge_index [2, num_edges] where:
++    # edge_index[0] = query indices (from y)
++    # edge_index[1] = neighbor indices (from x)
++    edge_index1 = knn(s_pcd1, q_pcd1, num_neighbors)
++    edge_index2 = knn(s_pcd2, q_pcd2, num_neighbors)
+ 
+-    ind_local1 = pointops.knnquery_heap(num_neighbors, s_pcd1, q_pcd1)
+-    ind_local2 = pointops.knnquery_heap(num_neighbors, s_pcd2, q_pcd2)
++    # Reshape: edge_index[1] contains the neighbor indices
++    # Group by query point to get (num_query_points, k)
++    ind_local1 = edge_index1[1].reshape(-1, num_neighbors)
++    ind_local2 = edge_index2[1].reshape(-1, num_neighbors)
+ 
++    # Offset indices for second batch element
+     ind_local2 = ind_local2 + s_lengths[0]
+-    index = torch.cat([ind_local1, ind_local2], 1)
++    index = torch.cat([ind_local1, ind_local2], 0)
+ 
+-    return index.squeeze(0)
++    return index
+ 
+ 
+ 

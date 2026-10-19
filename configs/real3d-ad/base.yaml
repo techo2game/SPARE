@@ -1,0 +1,9 @@
+dataset: Real3DAD
+dataset_path: data/Real3D/
+scale_mode: shape_bbox
+num_points: 4096
+rel: True
+
+max_iters: 40000
+train_batch_size: 32
+val_batch_size: 32

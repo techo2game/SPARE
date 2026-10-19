@@ -1,0 +1,7 @@
+dataset: MVTec3DAD
+dataset_path: data/mvtec3d  # MVTec 3D-AD root (relative to the repository root)
+scale_mode: shape_bbox
+num_points: 150000
+max_iters: 40000
+train_batch_size: 32
+val_batch_size: 32

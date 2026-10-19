@@ -1,0 +1,4 @@
+# Only the lock file is needed to build the environment image
+*
+!requirements.lock.txt
+!docker/entrypoint.sh
