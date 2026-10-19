@@ -2,6 +2,10 @@
 
 Official implementation of the SPARE paper.
 
+![Anomaly maps on Real3D-AD](image/visualization.jpg)
+
+*Anomaly maps on Real3D-AD: MC3D-AD, BTF (FPFH) and SPARE (Ours), with the ground truth (GT).*
+
 ## 1. Get the code
 
 ```bash
