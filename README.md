@@ -17,7 +17,7 @@ cd SPARE
 
 **Real3D-AD dataset** (3.5 GB, from the [official Real3D-AD repository](https://github.com/M-3LAB/Real3D-AD)): download `real3d-ad-pcd.zip` from [Google Drive](https://drive.google.com/file/d/1oM4qjhlIMsQc_wiFIFIVBvuuR8nyk2k0/view) or [Baidu Netdisk](https://pan.baidu.com/s/1orQY3DjR6Z0wazMNPysShQ) (code: `vrmi`).
 
-**Pretrained models** (36 MB): download `spare_pretrained.tar.gz` from [Google Drive](https://drive.google.com/file/d/1FfYRcfizwtP-KTVe84uC_OTFqKvEwx1D/view) or [Weiyun](https://share.weiyun.com/BTWP9eVi).
+**Pretrained models** (36 MB): download `spare_pretrained.tar.gz` from [Google Drive](https://drive.google.com/file/d/1RH7Lqr4EsGn-TPd4z-a31uV_C3-DCxMi/view?usp=sharing) or [Weiyun](https://share.weiyun.com/bypMNsOo).
 
 Extract both inside the `SPARE` folder:
 
